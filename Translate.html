@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HearMe | Live Translator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@0;400;500;600;700&display=swap" rel="stylesheet">
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <link rel="icon" href="asset/PoliceBadge.gif" id="favicon">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4bb543;
+            --danger: #ff3333;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary) !important;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: scale(1.05);
+        }
+
+        .navbar-brand .emoji {
+            font-size: 1.8rem;
+            margin-right: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .navbar-brand:hover .emoji {
+            transform: rotate(15deg);
+        }
+
+        .hero {
+            padding: 4rem 0 3rem;
+            text-align: center;
+            background: linear-gradient(-45deg, #ffffff, #f0f4ff, #e6f0ff, #ffffff);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+            letter-spacing: -0.5px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #555;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .control-buttons {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-toggle {
+            background-color: var(--primary);
+            border: none;
+            font-weight: 600;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-toggle:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-toggle:disabled {
+            background-color: #cccccc;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-translate {
+            background-color: var(--accent);
+            border: none;
+            font-weight: 600;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+        }
+
+        .btn-translate:hover {
+            background-color: #3abde8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 201, 240, 0.4);
+        }
+
+        .btn-translate:disabled {
+            background-color: #cccccc;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-download:disabled {
+            background-color: #cccccc;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .box {
+            margin-bottom: 2.5rem;
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .box h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .box h3 .emoji {
+            margin-right: 0.7rem;
+            font-size: 1.4rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            font-size: 1.05rem;
+            padding: 1.2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            resize: vertical;
+            background-color: var(--light);
+            color: var(--dark);
+            transition: all 0.3s ease;
+            overflow-y: auto;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.2);
+        }
+
+        .download-buttons {
+            text-align: center;
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-download {
+            background-color: var(--success);
+            border: none;
+            font-weight: 600;
+            padding: 0.8rem 1.8rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(75, 181, 67, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-download:hover {
+            background-color: #3fa037;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(75, 181, 67, 0.4);
+        }
+
+        .footer {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 3rem 0 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-logo {
+            font-size: 1.6rem;
+            font-weight: 700;
+        }
+
+        .footer-logo .emoji {
+            margin-right: 0.6rem;
+        }
+
+        .footer-text p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        #backendStatus {
+            margin-left: 1rem;
+            font-weight: 700;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #backendStatus.online {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+
+        #backendStatus.online::before {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        #backendStatus.offline {
+            color: #721c24;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+
+        #backendStatus.offline::before {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(0.95);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2rem;
+            }
+
+            .hero p {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+
+            .control-buttons {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .language-select {
+                width: 100%;
+            }
+
+            .download-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-download {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        select,
+        button {
+            transition: all 0.3s ease;
+        }
+
+        select:focus,
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand">
+                <img src="asset/PoliceBadge.gif" alt="Police Logo" width="30" height="30"
+                    class="d-inline-block align-text-top">
+            </a>
+            <a class="navbar-brand">Police Case Reporter</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">AdminPage</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="about.html">About</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="upload.html">TrackOfficers</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <br><br>
+    <section class="hero">
+        <div class="container">
+            <h1 id="heroTitle">SAPS Case Reporter</h1>
+            <p id="heroSubtitle">This real-time AI model enables police to efficiently collect cases from victims and
+                monitor the officers handling each case.</p>
+        </div>
+    </section>
+    <main>
+        <div class="control-buttons">
+            <select id="sourceLanguage" class="form-select language-select">
+                <option value="af-ZA">Afrikaans</option>
+                <option value="en-ZA">English</option>
+            </select>
+            <select id="targetLanguage" class="form-select language-select">
+                <option value="af-ZA">Afrikaans</option>
+                <option value="en-ZA">English</option>
+            </select>
+            <button id="start" class="btn btn-toggle">Start Listening</button>
+            <button id="stop" class="btn btn-toggle" disabled>Stop Listening</button>
+            <span id="backendStatus" style="margin-left: 1rem; font-weight: 500;"></span>
+        </div>
+        <div class="control-buttons">
+            <button id="translate" class="btn btn-translate" disabled>Translate</button>
+        </div>
+        <div class="box">
+            <h3 id="sourceLabel"><span class="emoji">🎧</span> Source Transcript</h3>
+            <textarea id="sourceText" readonly placeholder="Transcription will appear here..."></textarea>
+        </div>
+        <div class="box">
+            <h3 id="targetLabel"><span class="emoji">🌐</span> Translated Text</h3>
+            <textarea id="targetText" readonly
+                placeholder="Translation will appear here after you click 'Translate'..."></textarea>
+        </div>
+        <div class="download-buttons">
+            <button id="downloadSource" class="btn btn-download">Download Source Transcript</button>
+            <button id="downloadTarget" class="btn btn-download">Download Translation</button>
+            <button id="downloadAudio" class="btn btn-download" disabled>Download Audio</button>
+        </div>
+    </main>
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo"><span class="emoji">🎙️</span> HearMe</div>
+            <div class="footer-text">
+                <p>© 2025 HearMe. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM Elements
+            const sourceLanguage = document.getElementById('sourceLanguage');
+            const targetLanguage = document.getElementById('targetLanguage');
+            const startBtn = document.getElementById('start');
+            const stopBtn = document.getElementById('stop');
+            const translateBtn = document.getElementById('translate');
+            const sourceTextArea = document.getElementById('sourceText');
+            const targetTextArea = document.getElementById('targetText');
+            const backendStatus = document.getElementById('backendStatus');
+            const downloadSourceBtn = document.getElementById('downloadSource');
+            const downloadTargetBtn = document.getElementById('downloadTarget');
+            const downloadAudioBtn = document.getElementById('downloadAudio');
+
+            // Azure Translator Configuration
+            const apiKey = "5oy9aDueO5o7sorOCIbHlEDhlzpPKJUa6ZcWzgbVRK0tKqp8350RJQQJ99BFACrIdLPXJ3w3AAAbACOGOQyE";
+            const endpoint = "https://api.cognitive.microsofttranslator.com";
+            const location = "southafricanorth";
+
+            // Supported Languages (aligned with Azure Translator API codes)
+            const supportedLanguages = {
+                'af': 'Afrikaans',
+                'en': 'English',
+                'zu': 'isiZulu',
+                'xh': 'isiXhosa'
+            };
+
+            // State variables
+            let recognition;
+            let mediaRecorder;
+            let audioChunks = [];
+            let fullSourceText = '';
+            let audioBlob = null;
+
+            // Initialize UI
+            initLanguageDropdowns();
+            updateUI();
+
+            function initLanguageDropdowns() {
+                sourceLanguage.innerHTML = '';
+                targetLanguage.innerHTML = '';
+
+                Object.entries(supportedLanguages).forEach(([code, name]) => {
+                    const option = document.createElement('option');
+                    option.value = code;
+                    option.textContent = name;
+                    sourceLanguage.appendChild(option.cloneNode(true));
+                    targetLanguage.appendChild(option);
+                });
+
+                sourceLanguage.value = 'af';
+                targetLanguage.value = 'en';
+            }
+
+            function updateUI() {
+                const srcLang = sourceLanguage.value;
+                const tgtLang = targetLanguage.value;
+                document.getElementById('sourceLabel').innerHTML = `<span class="emoji">🎧</span> ${supportedLanguages[srcLang]} Transcript`;
+                document.getElementById('targetLabel').innerHTML = `<span class="emoji">🌐</span> ${supportedLanguages[tgtLang]} Translation`;
+            }
+
+            async function translateText(text) {
+                if (!text.trim()) return;
+
+                const sourceLang = sourceLanguage.value;
+                const targetLang = targetLanguage.value;
+
+                targetTextArea.placeholder = 'Translating...';
+
+                try {
+                    const url = `${endpoint}/translate?api-version=3.0&from=${sourceLang}&to=${targetLang}`;
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Ocp-Apim-Subscription-Key': apiKey,
+                            'Ocp-Apim-Subscription-Region': location,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify([{ Text: text }]),
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP error! Status: ${response.status}, Details: ${errorText}`);
+                    }
+
+                    const data = await response.json();
+                    if (data && data[0]?.translations[0]?.text) {
+                        targetTextArea.value = data[0].translations[0].text;
+                    } else {
+                        targetTextArea.value = 'Error: No translation returned';
+                    }
+                } catch (error) {
+                    console.error('Translation error:', error);
+                    targetTextArea.value = `Translation failed: ${error.message}`;
+                }
+
+                targetTextArea.placeholder = 'Translation';
+                targetTextArea.scrollTop = targetTextArea.scrollHeight;
+            }
+
+            function initSpeechRecognition() {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+                    recognition.lang = sourceLanguage.value.includes('af') ? 'af-ZA' : 'en-ZA'; // Speech API uses af-ZA, en-ZA
+
+                    recognition.onresult = (event) => {
+                        let interimTranscript = '';
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            const transcript = event.results[i][0].transcript;
+                            if (event.results[i].isFinal) {
+                                fullSourceText += transcript + ' ';
+                            } else {
+                                interimTranscript += transcript;
+                            }
+                        }
+                        sourceTextArea.value = fullSourceText + interimTranscript;
+                        sourceTextArea.scrollTop = sourceTextArea.scrollHeight;
+                    };
+
+                    recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event.error);
+                        stopListening();
+                        alert('Speech Recognition Error: ' + event.error);
+                    };
+
+                    recognition.onend = () => {
+                        if (startBtn.disabled) startListening();
+                    };
+                } else {
+                    alert('Speech recognition not supported in this browser.');
+                }
+            }
+
+            function startListening() {
+                if (!recognition && !initSpeechRecognition()) return;
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        mediaRecorder = new MediaRecorder(stream);
+                        audioChunks = [];
+                        mediaRecorder.start();
+                        recognition.start();
+                        startBtn.disabled = true;
+                        stopBtn.disabled = false;
+                        translateBtn.disabled = true;
+                        backendStatus.textContent = 'Status: Listening...';
+                        backendStatus.className = 'online';
+                    })
+                    .catch(err => {
+                        console.error('Microphone error:', err);
+                        alert('Could not access microphone: ' + err.message);
+                    });
+            }
+
+            function stopListening() {
+                if (recognition) recognition.stop();
+                if (mediaRecorder) {
+                    mediaRecorder.stop();
+                    mediaRecorder.onstop = () => {
+                        audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        downloadAudioBtn.disabled = false;
+                    };
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+                }
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                translateBtn.disabled = !fullSourceText.trim();
+                backendStatus.textContent = 'Status: Ready';
+            }
+
+            // Event listeners
+            sourceLanguage.addEventListener('change', () => {
+                updateUI();
+                fullSourceText = '';
+                sourceTextArea.value = '';
+                targetTextArea.value = '';
+                stopListening();
+            });
+
+            targetLanguage.addEventListener('change', updateUI);
+            translateBtn.addEventListener('click', () => translateText(fullSourceText));
+            startBtn.addEventListener('click', startListening);
+            stopBtn.addEventListener('click', stopListening);
+
+            // Download functions
+            downloadSourceBtn.addEventListener('click', () => downloadText(sourceTextArea.value, 'transcript.txt'));
+            downloadTargetBtn.addEventListener('click', () => downloadText(targetTextArea.value, 'translation.txt'));
+            downloadAudioBtn.addEventListener('click', () => {
+                if (audioBlob) {
+                    const url = URL.createObjectURL(audioBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'recording.webm';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                }
+            });
+
+            function downloadText(content, filename) {
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        });
+    </script>
+</body>
+
+</html>

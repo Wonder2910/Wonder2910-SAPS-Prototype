@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Police Case Management System - Performance</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --police-blue: #003087;
+            --police-light-blue: #0051BA;
+            --police-gold: #FFD700;
+            --police-white: #F5F6F5;
+            --police-dark: #212529;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--police-blue) 0%, var(--police-light-blue) 100%);
+            color: var(--police-dark);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: var(--police-dark) !important;
+            border-bottom: 3px solid var(--police-gold);
+        }
+
+        .navbar-brand img {
+            height: 40px;
+        }
+
+        .nav-link {
+            color: var(--police-white) !important;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: var(--police-gold) !important;
+        }
+
+        .container {
+            background-color: var(--police-white);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .table-container {
+            margin-top: 20px;
+        }
+
+        .table thead th {
+            background-color: var(--police-blue);
+            color: var(--police-white);
+            border: none;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(0, 48, 135, 0.05);
+        }
+
+        .performance-score {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: #fff;
+            display: inline-block;
+        }
+
+        .performance-high {
+            background-color: #28a745; /* Green for >1.5 */
+        }
+
+        .performance-yellow {
+            background-color: #ffc107; /* Yellow for 1-1.5 */
+        }
+
+        .performance-semi-red {
+            background-color: #ff8c69; /* Semi-yellow to red for 0.5-1 */
+        }
+
+        .performance-low {
+            background-color: #dc3545; /* Red for 0-0.5 */
+        }
+
+        .footer {
+            background-color: var(--police-dark);
+            color: var(--police-white);
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="upload.html">
+                <img src="asset/PoliceBadge.gif" alt="SAPS Logo">
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="upload.html">Home</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="text-center mb-4">Officer Performance Overview</h2>
+        <div class="table-container">
+            <table id="performanceTable" class="table table-striped table-bordered" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Badge Number</th>
+                        <th>Performance Score</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 Police Case Management System. All rights reserved.</p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Function to calculate officer performance
+            function calculateOfficerPerformance(closedCases = [], openCasesCount = 0, benchmarkTime = 5, K = 1) {
+                let avgDuration = 0;
+                if (closedCases.length > 0) {
+                    const totalDays = closedCases.reduce((sum, { startDate, endDate }) => {
+                        const start = new Date(startDate);
+                        const end = new Date(endDate);
+                        return sum + Math.round((end - start) / (1000 * 60 * 60 * 24));
+                    }, 0);
+                    avgDuration = totalDays / closedCases.length;
+                }
+
+                let productivity = 0;
+                let efficiency = 0;
+                let score = 0;
+
+                if (openCasesCount + K > 0) {
+                    productivity = closedCases.length / (openCasesCount + K);
+                }
+
+                if (avgDuration > 0) {
+                    efficiency = benchmarkTime / avgDuration;
+                }
+
+                const closedCasesContribution = (closedCases.length / 10) * 0.4;
+                const productivityContribution = productivity * 0.3;
+                const efficiencyContribution = efficiency * 0.3;
+                score = closedCasesContribution + productivityContribution + efficiencyContribution;
+
+                return {
+                    score: parseFloat(score.toFixed(2))
+                };
+            }
+
+            // Load data from localStorage and populate the table
+            function loadPerformanceData() {
+                const storedOfficers = JSON.parse(localStorage.getItem('storedOfficers')) || [];
+                const casesBySheet = JSON.parse(localStorage.getItem('casesBySheet')) || {};
+
+                if (storedOfficers.length === 0) {
+                    $('#performanceTable tbody').html('<tr><td colspan="4" class="text-center">No data available. Please upload data on the Home page.</td></tr>');
+                    return;
+                }
+
+                const performanceData = storedOfficers.map(officer => {
+                    const sheetIndex = storedOfficers.indexOf(officer) + 2;
+                    const officerCases = casesBySheet[`Sheet${sheetIndex}`] || [];
+                    const closedCases = officerCases.filter(c => c.Status === 'Closed').map(c => ({
+                        startDate: c['Date-Reported'],
+                        endDate: c['Last-Updated']
+                    }));
+                    const openCasesCount = officerCases.length - closedCases.length;
+                    const performance = calculateOfficerPerformance(closedCases, openCasesCount);
+                    return {
+                        Name: officer.Name,
+                        Position: officer.Position,
+                        BadgeNumber: officer.BadgeNumber,
+                        PerformanceScore: performance.score
+                    };
+                });
+
+                const table = $('#performanceTable').DataTable({
+                    destroy: true,
+                    data: performanceData,
+                    columns: [
+                        { data: 'Name' },
+                        { data: 'Position' },
+                        { data: 'BadgeNumber' },
+                        {
+                            data: 'PerformanceScore',
+                            render: function (data) {
+                                let performanceClass = '';
+                                if (data > 1.5) {
+                                    performanceClass = 'performance-high';
+                                } else if (data >= 1.0 && data <= 1.5) {
+                                    performanceClass = 'performance-yellow';
+                                } else if (data >= 0.5 && data < 1.0) {
+                                    performanceClass = 'performance-semi-red';
+                                } else {
+                                    performanceClass = 'performance-low';
+                                }
+                                return `<span class="performance-score ${performanceClass}">${data}</span>`;
+                            }
+                        }
+                    ],
+                    ordering: true,
+                    order: [[3, 'desc']] // Sort by PerformanceScore in descending order by default
+                });
+            }
+
+            // Load performance data when the page is ready
+            loadPerformanceData();
+        });
+    </script>
+</body>
+
+</html>

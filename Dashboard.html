@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Officer Case Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --police-blue: #003087;
+            --police-light-blue: #0051BA;
+            --police-gold: #FFD700;
+            --police-white: #F5F6F5;
+            --police-dark: #212529;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--police-blue) 0%, var(--police-light-blue) 100%);
+            color: var(--police-dark);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: var(--police-dark) !important;
+            border-bottom: 3px solid var(--police-gold);
+        }
+
+        .navbar-brand img {
+            height: 40px;
+        }
+
+        .nav-link {
+            color: var(--police-white) !important;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: var(--police-gold) !important;
+        }
+
+        .container {
+            background-color: var(--police-white);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .btn-back {
+            background-color: var(--police-gold);
+            color: var(--police-dark);
+            border: none;
+            padding: 8px 20px;
+            font-weight: 500;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #FFC107;
+            color: var(--police-dark);
+        }
+
+        .officer-card {
+            background-color: rgba(0, 48, 135, 0.1);
+            border-left: 5px solid var(--police-blue);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 10px 10px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            color: var(--police-blue);
+        }
+
+        .table-container {
+            margin-top: 20px;
+        }
+
+        .table thead th {
+            background-color: var(--police-blue);
+            color: var(--police-white);
+            border: none;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .badge-status {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+        }
+
+        .bg-open {
+            background-color: #dc3545;
+            color: #fff;
+        }
+
+        .bg-investigating {
+            background-color: #fd7e14;
+            color: #fff;
+        }
+
+        .bg-closed {
+            background-color: #198754;
+            color: #fff;
+        }
+
+        .chart-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/South_African_Police_Service_badge.svg/1200px-South_African_Police_Service_badge.svg.png"
+                    alt="SAPS Logo">
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="#">Admin Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between mb-4">
+            <h2 class="text-center">Officer Case Dashboard</h2>
+            <a class="btn btn-back" href="upload.html">Back to Officers</a>
+        </div>
+        <div class="officer-card">
+            <div class="card-body">
+                <h5 class="card-title" id="officerName"></h5>
+                <p><strong>Position:</strong> <span id="officerPosition"></span></p>
+                <p><strong>Badge Number:</strong> <span id="officerBadge"></span></p>
+                <p><strong>Total Cases:</strong> <span id="officerCases"></span></p>
+            </div>
+        </div>
+        <div class="table-container">
+            <table id="caseDetailsTable" class="table table-striped table-bordered" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Case ID</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Date Reported</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5 class="text-center">Case Status Distribution</h5>
+                    <canvas id="caseStatusChart"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5 class="text-center">Case Type Distribution</h5>
+                    <canvas id="caseTypeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const badgeNumber = localStorage.getItem('selectedBadge');
+            const selectedIndex = parseInt(localStorage.getItem('selectedIndex'));
+
+            if (!badgeNumber || selectedIndex === null) {
+                alert('No officer selected. Please return to the upload page.');
+                window.location.href = 'upload.html';
+                return;
+            }
+
+            // First, try to get data from localStorage (Excel data)
+            let storedOfficers = JSON.parse(localStorage.getItem('storedOfficers')) || [];
+            let casesBySheet = JSON.parse(localStorage.getItem('casesBySheet')) || {};
+            let officer = storedOfficers[selectedIndex] || {};
+            let officerCases = casesBySheet[`Sheet${selectedIndex + 2}`] || [];
+
+            // Map officer cases to match expected format
+            officerCases = officerCases.map(c => ({
+                CaseID: c['Case-ID'],
+                Type: c.Type,
+                Status: c.Status,
+                DateReported: c['Date-Reported'],
+                LastUpdated: c['Last-Updated']
+            }));
+
+            if (officerCases.length > 0) {
+                // Use local data if available
+                displayOfficerData(officer, officerCases);
+            } else {
+                // Fallback to Google Sheets if local data is not available
+                fetch(`https://script.google.com/macros/s/AKfycbyihAEef8QX7SAV0E5HnCADq_mvh7IEleY9f_SYxZvqTEvJLgUb9HLIuUMuwsFlis4/exec?action=getCases&badgeNumber=${badgeNumber}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status !== 'success') {
+                            throw new Error(data.message);
+                        }
+
+                        officer = data.officer || {};
+                        officerCases = data.cases || [];
+                        displayOfficerData(officer, officerCases);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching case data:', error);
+                        alert('Error fetching officer details: ' + error.message);
+                        window.location.href = 'upload.html';
+                    });
+            }
+
+            function displayOfficerData(officer, cases) {
+                // Update officer info
+                $('#officerName').text(officer.Name || 'Officer ' + officer.BadgeNumber);
+                $('#officerPosition').text(officer.Position || 'Detective');
+                $('#officerBadge').text(officer.BadgeNumber || '-');
+                $('#officerCases').text(officer.Cases || 0);
+
+                // Initialize DataTable
+                $('#caseDetailsTable').DataTable({
+                    destroy: true,
+                    data: cases,
+                    columns: [
+                        { data: 'CaseID', defaultContent: '-' },
+                        { data: 'Type', defaultContent: '-' },
+                        {
+                            data: 'Status',
+                            render: function (data) {
+                                if (!data) return '<span class="badge bg-secondary badge-status">-</span>';
+                                let badgeClass = 'bg-secondary';
+                                if (data === 'Open') badgeClass = 'bg-open';
+                                else if (data === 'Investigating') badgeClass = 'bg-investigating';
+                                else if (data === 'Closed') badgeClass = 'bg-closed';
+                                return `<span class="badge ${badgeClass} badge-status">${data}</span>`;
+                            }
+                        },
+                        { data: 'DateReported', defaultContent: '-' },
+                        { data: 'LastUpdated', defaultContent: '-' }
+                    ],
+                    order: [[3, 'desc']]
+                });
+
+                // Initialize charts
+                initCharts(cases);
+            }
+
+            function initCharts(cases) {
+                const statusCtx = document.getElementById('caseStatusChart').getContext('2d');
+                const statusCounts = countByProperty(cases, 'Status');
+
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(statusCounts).length ? Object.keys(statusCounts) : ['No Data'],
+                        datasets: [{
+                            data: Object.keys(statusCounts).length ? Object.values(statusCounts) : [1],
+                            backgroundColor: Object.keys(statusCounts).length
+                                ? ['#dc3545', '#fd7e14', '#198754']
+                                : ['#cccccc'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+
+                const typeCtx = document.getElementById('caseTypeChart').getContext('2d');
+                const typeCounts = countByProperty(cases, 'Type');
+
+                new Chart(typeCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(typeCounts).length ? Object.keys(typeCounts) : ['No Data'],
+                        datasets: [{
+                            label: 'Cases',
+                            data: Object.keys(typeCounts).length ? Object.values(typeCounts) : [0],
+                            backgroundColor: '#0047ab',
+                            borderColor: '#003366',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+            }
+
+            function countByProperty(items, prop) {
+                return items.reduce((acc, item) => {
+                    const value = item[prop] || 'Unknown';
+                    acc[value] = (acc[value] || 0) + 1;
+                    return acc;
+                }, {});
+            }
+        });
+    </script>
+</body>
+
+</html>

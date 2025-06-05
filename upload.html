@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Police Case Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --police-blue: #003087;
+            --police-light-blue: #0051BA;
+            --police-gold: #FFD700;
+            --police-white: #F5F6F5;
+            --police-dark: #212529;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--police-blue) 0%, var(--police-light-blue) 100%);
+            color: var(--police-dark);
+            font-family: 'Arial', sans-serif;
+            min-height: 100vh;
+            margin: 0;
+            padding-bottom: 60px; /* Space for footer */
+        }
+
+        .navbar {
+            background-color: var(--police-dark) !important;
+            border-bottom: 3px solid var(--police-gold);
+        }
+
+        .navbar-brand img {
+            height: 40px;
+        }
+
+        .nav-link {
+            color: var(--police-white) !important;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            color: var(--police-gold) !important;
+        }
+
+        .container {
+            background-color: var(--police-white);
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .upload-container {
+            border: 2px dashed var(--police-blue);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: rgba(0, 48, 135, 0.05);
+            transition: background-color 0.3s ease;
+        }
+
+        .upload-container:hover {
+            background-color: rgba(0, 48, 135, 0.1);
+        }
+
+        .upload-container label {
+            color: var(--police-blue);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .upload-container label:hover {
+            color: var(--police-light-blue);
+            text-decoration: underline;
+        }
+
+        .btn-primary {
+            background-color: var(--police-blue);
+            border-color: var(--police-blue);
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--police-light-blue);
+            border-color: var(--police-light-blue);
+        }
+
+        .btn-send, .btn-clear, .btn-performance {
+            background-color: var(--police-gold);
+            color: var(--police-dark);
+            border: none;
+            padding: 8px 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .btn-send:hover, .btn-clear:hover, .btn-performance:hover {
+            background-color: #FFC107;
+        }
+
+        .table-container {
+            margin-top: 20px;
+        }
+
+        .table thead th {
+            background-color: var(--police-blue);
+            color: var(--police-white);
+            border: none;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background-color: rgba(0, 48, 135, 0.05);
+        }
+
+        .badge-count {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            background-color: var(--police-blue);
+            color: var(--police-white);
+        }
+
+        .btn-view {
+            background-color: var(--police-gold);
+            color: var(--police-dark);
+            border: none;
+            padding: 5px 15px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-view:hover {
+            background-color: #FFC107;
+            color: var(--police-dark);
+        }
+
+        .total-cases {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--police-blue);
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        #sendToSheet {
+            display: none;
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        #hiddenForm {
+            display: none;
+        }
+
+        #callbackFrame {
+            display: none;
+        }
+
+        #loadingModal .modal-content {
+            background-color: var(--police-white);
+            color: var(--police-dark);
+        }
+
+        #loadingModal .modal-header {
+            background-color: var(--police-blue);
+            color: var(--police-white);
+            border-bottom: none;
+        }
+
+        #loadingModal .modal-body {
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .footer {
+            background-color: var(--police-dark);
+            color: var(--police-white);
+            text-align: center;
+            padding: 10px 0;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="asset/PoliceBadge.gif" alt="SAPS Logo">
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="Translate.html">Home</a>
+                <a class="nav-link" href="Performance.html">Performance</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 class="text-center mb-4">Police Case Management System</h2>
+        <div class="upload-container">
+            <form id="uploadForm">
+                <div class="mb-3">
+                    <label for="csvFile">Upload Officer Data (Excel File)</label>
+                    <input type="file" class="form-control d-none" id="csvFile" accept=".xlsx, .xls" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+        <div class="table-container">
+            <table id="officerTable" class="table table-striped table-bordered" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Badge Number</th>
+                        <th>Cases</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="total-cases">
+            Total Cases: <span id="totalCases">0</span>
+        </div>
+        <div id="sendToSheet">
+            <button class="btn btn-send">Send to Google Sheet</button>
+            <button class="btn btn-clear">Clear Data</button>
+            <a href="Performance.html" class="btn btn-performance">View Performance</a>
+        </div>
+        <!-- Hidden form for submitting data to Google Apps Script -->
+        <form id="hiddenForm" method="POST" target="callbackFrame" action="https://script.google.com/macros/s/AKfycbyihAEef8QX7SAV0E5HnCADq_mvh7IEleY9f_SYxZvqTEvJLgUb9HLIuUMuwsFlis4/exec">
+            <input type="hidden" name="action" value="upload">
+            <input type="hidden" name="officers" id="hiddenOfficers">
+            <input type="hidden" name="casesBySheet" id="hiddenCasesBySheet">
+        </form>
+        <!-- Hidden iframe for callback -->
+        <iframe id="callbackFrame" name="callbackFrame"></iframe>
+    </div>
+
+    <!-- Loading/Success Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" aria-labelledby="loadingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loadingModalLabel">Processing</h5>
+                </div>
+                <div class="modal-body" id="loadingModalBody">
+                    Loading...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 Police Case Management System. All rights reserved.</p>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let casesBySheet = {}; // Store case data for later use in Dashboard.html
+
+            // Initialize Bootstrap modal
+            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'), {
+                backdrop: 'static',
+                keyboard: false
+            });
+
+            // Function to populate DataTable with officer data
+            function populateDataTable(officers) {
+                // Store the officer list in localStorage (no sorting)
+                const storedOfficers = officers.map(officer => ({
+                    Name: officer.Name,
+                    Position: officer.Position,
+                    BadgeNumber: officer.BadgeNumber,
+                    Cases: officer.Cases
+                }));
+                localStorage.setItem('storedOfficers', JSON.stringify(storedOfficers));
+                localStorage.setItem('casesBySheet', JSON.stringify(casesBySheet));
+
+                const table = $('#officerTable').DataTable({
+                    destroy: true,
+                    data: officers,
+                    columns: [
+                        { data: 'Name' },
+                        { data: 'Position' },
+                        { data: 'BadgeNumber' },
+                        {
+                            data: 'Cases',
+                            render: function (data) {
+                                return `<span class="badge bg-primary badge-count">${data}</span>`;
+                            }
+                        },
+                        {
+                            data: null,
+                            render: function (data, type, row, meta) {
+                                return `<button class="btn btn-view" data-badge="${row.BadgeNumber}" data-index="${meta.row}">View Cases</button>`;
+                            }
+                        }
+                    ],
+                    ordering: false
+                });
+
+                $('#officerTable tbody').on('click', '.btn-view', function (event) {
+                    event.preventDefault();
+                    const badgeNumber = $(this).data('badge');
+                    const index = $(this).data('index');
+                    console.log('View Cases clicked for BadgeNumber:', badgeNumber, 'at index:', index);
+                    localStorage.setItem('selectedBadge', badgeNumber);
+                    localStorage.setItem('selectedIndex', index);
+                    try {
+                        window.location.href = 'Dashboard.html';
+                    } catch (error) {
+                        console.error('Navigation failed:', error);
+                        alert('Error navigating to Dashboard. Please try again.');
+                    }
+                });
+
+                const totalCases = officers.reduce((sum, officer) => sum + (parseInt(officer.Cases) || 0), 0);
+                $('#totalCases').text(totalCases);
+
+                // Show the "Send to Google Sheet", "Clear Data", and "View Performance" buttons after data is loaded
+                $('#sendToSheet').show();
+            }
+
+            // Check localStorage for existing data on page load
+            const storedOfficers = JSON.parse(localStorage.getItem('storedOfficers')) || [];
+            if (storedOfficers.length > 0) {
+                casesBySheet = JSON.parse(localStorage.getItem('casesBySheet')) || {};
+                populateDataTable(storedOfficers);
+            } else {
+                // Initialize the table as empty if no data in localStorage
+                populateDataTable([]);
+            }
+
+            // Handle file upload to display data on the website
+            $('#uploadForm').on('submit', function (e) {
+                e.preventDefault();
+                const fileInput = document.getElementById('csvFile');
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert('Please select an Excel file to upload.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        const arrayBuffer = e.target.result;
+                        const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+                        const sheetNames = workbook.SheetNames;
+
+                        if (sheetNames.length < 2) {
+                            alert('Excel file must have at least two sheets: one for officers and at least one for cases.');
+                            return;
+                        }
+
+                        // Parse officers from Sheet1 (no sorting)
+                        const officerSheet = workbook.Sheets[sheetNames[0]];
+                        let officers = XLSX.utils.sheet_to_json(officerSheet, { header: ['Name', 'Position', 'BadgeNumber', 'Cases'] }).slice(1);
+
+                        // Parse cases from remaining sheets
+                        casesBySheet = {};
+                        sheetNames.slice(1).forEach((sheetName, index) => {
+                            const caseSheet = workbook.Sheets[sheetName];
+                            const cases = XLSX.utils.sheet_to_json(caseSheet, { header: ['Case-ID', 'Type', 'Status', 'Date-Reported', 'Last-Updated'] }).slice(1);
+                            casesBySheet[`Sheet${index + 2}`] = cases;
+                        });
+
+                        // Display the officer data in the table immediately
+                        populateDataTable(officers);
+                    } catch (error) {
+                        console.error('Error processing file:', error.message);
+                        alert('Error processing Excel file: ' + error.message + '. Please ensure it is a valid Excel file with the correct structure.');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+
+            // Handle "Send to Google Sheet" button click
+            $('#sendToSheet').on('click', '.btn-send', function () {
+                // Get the current data from the DataTable
+                const officers = $('#officerTable').DataTable().data().toArray();
+
+                if (officers.length === 0) {
+                    alert('No data to send to Google Sheet.');
+                    return;
+                }
+
+                // Show loading modal
+                $('#loadingModalBody').text('Loading...');
+                loadingModal.show();
+
+                // Set a 7-second timer for loading
+                setTimeout(() => {
+                    $('#loadingModalBody').text('Successfully sent to Google Sheet');
+                    setTimeout(() => {
+                        loadingModal.hide();
+                    }, 1500); // Close modal 1.5 seconds after success message
+                }, 7000); // 7 seconds
+
+                // Populate the hidden form
+                $('#hiddenOfficers').val(JSON.stringify(officers));
+                $('#hiddenCasesBySheet').val(JSON.stringify(casesBySheet));
+
+                // Submit the form to the iframe
+                $('#hiddenForm').submit();
+            });
+
+            // Handle "Clear Data" button click
+            $('#sendToSheet').on('click', '.btn-clear', function () {
+                localStorage.removeItem('storedOfficers');
+                localStorage.removeItem('casesBySheet');
+                localStorage.removeItem('selectedBadge');
+                localStorage.removeItem('selectedIndex');
+                casesBySheet = {};
+                populateDataTable([]);
+                $('#sendToSheet').hide();
+                alert('Data cleared successfully. Please upload a new file if needed.');
+            });
+
+            // Handle callback from iframe
+            window.handleUploadResponse = function (status, message) {
+                if (status === 'error') {
+                    loadingModal.hide();
+                    alert('Error uploading data: ' + decodeURIComponent(message));
+                }
+                // Success is handled by the timeout, so no action needed here
+            };
+        });
+    </script>
+</body>
+
+</html>
